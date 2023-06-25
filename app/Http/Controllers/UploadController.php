@@ -3,17 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\UploadCsvJob;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
 {
-    public $mergedFileName;
+    public $perPage = 100;
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('welcome');
+        $products = Product::orderByDesc('id')->paginate($this->perPage);
+
+        return view('index', compact('products'));
     }
 
     public function upload(Request $request)
@@ -45,16 +48,15 @@ class UploadController extends Controller
                     }
                 }
                 fclose($csvFileHandle);
-                unlink($file); // delete individual CSV files after merging
+                unlink($file);
             }
             fclose($mergedFileHandle);
         } else {
-            $mergedFileName = $csvFiles[0]; // no need to merge if there's only one file
+            $mergedFileName = $csvFiles[0];
         }
 
         return response()->json([
-            'success' => true,
-            'merged_file_name' => $mergedFileName // return the merged file name
+            'message' => 'Upload file successfully',
         ]);
     }
 
@@ -78,69 +80,53 @@ class UploadController extends Controller
 
         $handle = fopen($path[0], 'r');
         $counter = 0;
-        $isFirstChunk = true; // added flag variable
+        $isFirstChunk = true;
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-            // collect rows for the chunk
             $rows[] = $row;
             $counter++;
 
-            // check if chunk size is reached
             if ($counter === $chunkSize) {
-                // create a new collection
                 $collection = new Collection($rows);
 
-                // add headers to the collection if it's not the first chunk
                 if (!$isFirstChunk) {
                     $collection->prepend($header);
                 }
 
-                // create a new CSV file
                 $fileName = 'chunk-' . time() . '.csv';
                 Storage::disk('local')->put($fileName, '');
 
-                // write the collection to the new CSV file
                 $handleNew = fopen(storage_path('app/' . $fileName), 'w');
                 $collection->each(function ($row) use ($handleNew, $delimiter) {
                     fputcsv($handleNew, $row, $delimiter);
                 });
 
-                // reset the counter and rows
                 $counter = 0;
                 $rows = [];
 
-                // set the flag to false after the first chunk is processed
                 $isFirstChunk = false;
 
-                // close the new handle
                 fclose($handleNew);
             }
         }
 
-        // check if there is any remaining rows
         if (!empty($rows)) {
-            // create a new collection
             $collection = new Collection($rows);
 
-            // add header to the collection if it's not the first chunk
             if (!$isFirstChunk) {
                 $collection->prepend($header);
             }
 
-            // create a new CSV file
             $fileName = 'chunk-' . time() . '.csv';
             Storage::disk('local')->put($fileName, '');
 
-            // write the collection to the new CSV file
             $handleNew = fopen(storage_path('app/' . $fileName), 'w');
             $collection->each(function ($row) use ($handleNew, $delimiter) {
                 fputcsv($handleNew, $row, $delimiter);
             });
 
-            // close the new handle
             fclose($handleNew);
         }
 
-        // close the handle of the large CSV file
         fclose($handle);
 
         $filePaths = glob(storage_path('app/*.csv'));
