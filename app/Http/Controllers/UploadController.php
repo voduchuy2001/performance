@@ -60,8 +60,7 @@ class UploadController extends Controller
 
     public function import()
     {
-        $path = public_path('uploads/' . $this->mergedFileName);
-
+        $path = glob(public_path('uploads/*.csv'));
         $delimiter = ',';
         $header = [
             'Name',
@@ -76,7 +75,7 @@ class UploadController extends Controller
         ];
         $chunkSize = 100000;
 
-        $handle = fopen($path, 'r');
+        $handle = fopen($path[0], 'r');
         $counter = 0;
         $isFirstChunk = true; // added flag variable
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
@@ -147,6 +146,15 @@ class UploadController extends Controller
 
         foreach ($filePaths as $filePath) {
             UploadCsvJob::dispatch($filePath);
+        }
+
+        unlink($path[0]);
+
+        $files = Storage::disk('local')->allFiles();
+
+        // loop through the files and delete them
+        foreach ($files as $file) {
+            Storage::disk('local')->delete($file);
         }
 
         return response()
