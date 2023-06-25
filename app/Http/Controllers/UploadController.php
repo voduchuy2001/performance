@@ -60,7 +60,7 @@ class UploadController extends Controller
 
     public function import()
     {
-        $path = public_path('uploads/' . $this->mergedFileName);
+        $path = glob(public_path('uploads/*.csv'));
 
         $delimiter = ',';
         $header = [
@@ -76,7 +76,7 @@ class UploadController extends Controller
         ];
         $chunkSize = 100000;
 
-        $handle = fopen($path, 'r');
+        $handle = fopen($path[0], 'r');
         $counter = 0;
         $isFirstChunk = true; // added flag variable
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
