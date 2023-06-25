@@ -1,6 +1,15 @@
 let browseFile = $('#browse-file')
 let csrfToken = $('meta[name="csrf-token"]').attr('content')
 let progress = $('.progress')
+let submitButton = $('#submit-button')
+let closeButton = $('#close-modal')
+let spinner = $('#spinner')
+
+submitButton.attr('disabled', true)
+
+submitButton.click(function(){
+    spinner.removeClass('hidden')
+});
 
 let resumable = new Resumable({
     target: 'http://127.0.0.1:8000',
@@ -18,16 +27,20 @@ let resumable = new Resumable({
 
 resumable.assignBrowse(browseFile[0])
 
-resumable.on('fileAdded', function (file) {
+resumable.on('fileAdded', function () {
     showProgress()
     resumable.upload()
 })
 
 resumable.on('fileProgress', function (file) {
+    submitButton.attr('disabled', true)
+    closeButton.attr('disabled', true)
     updateProgress(Math.floor(file.progress() * 100))
 })
 
 resumable.on('fileSuccess', function (response) {
+    submitButton.attr('disabled', false)
+    closeButton.attr('disabled', false)
     console.log(response);
 })
 

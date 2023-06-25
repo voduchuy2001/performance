@@ -24,15 +24,16 @@
               ease-in-out hover:bg-indigo-600 bg-indigo-700 rounded text-white
              px-4 sm:px-8 py-2 text-xs sm:text-sm
              text-center inline-flex items-center mr-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                    class="w-4 h-4 mr-2 -ml-1">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4 h-4 mr-2 -ml-1">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-        
+
                 Import Data from CSV
             </button>
         </div>
-        
+
         <div class="relative overflow-x-auto rounded-sm">
             <table id="product-table" class="w-full text-sm text-left text-gray-500">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100">
@@ -126,6 +127,8 @@
             {{ $products->links('components.pagination') }}
         </div>
     </div>
+    
+    @include('components.spinner')
 
     @include('components.modal')
 

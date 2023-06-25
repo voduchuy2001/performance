@@ -6,6 +6,7 @@ use App\Jobs\UploadCsvJob;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
@@ -16,6 +17,18 @@ class UploadController extends Controller
     {
         $products = Product::orderByDesc('id')->paginate($this->perPage);
 
+        $filepPublicPaths = glob(public_path('uploads/*.csv'));
+
+        foreach ($filepPublicPaths as $path) {
+            unlink($path);
+        }
+
+        $filepStoragePaths = glob(storage_path('app/*.csv'));
+
+        foreach ($filepStoragePaths as $path) {
+            unlink($path);
+        }
+
         return view('index', compact('products'));
     }
 
@@ -25,7 +38,7 @@ class UploadController extends Controller
 
         $timestamp = now()->timestamp;
 
-        $mergedFileName = $timestamp . '_merged.csv';
+        $mergedFileName = $timestamp . '.csv';
 
         foreach ($files as $file) {
             $extension = $file->getClientOriginalExtension();
@@ -116,7 +129,7 @@ class UploadController extends Controller
                 $collection->prepend($header);
             }
 
-            $fileName = 'chunk-' . time() . '.csv';
+            $fileName = time() . '.csv';
             Storage::disk('local')->put($fileName, '');
 
             $handleNew = fopen(storage_path('app/' . $fileName), 'w');
@@ -135,10 +148,6 @@ class UploadController extends Controller
             UploadCsvJob::dispatch($filePath);
         }
 
-        return response()
-            ->json([
-                'message' => 'Process of adding data is complete.',
-                200
-            ]);
+        return redirect()->route('index')->with('messages', 'Process of adding data is complete.');
     }
 }
