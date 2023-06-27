@@ -26,6 +26,9 @@
                                 Click here to upload CSV file
                             </span>
                         </p>
+
+                        <p id="file-name"></p>
+                        <p id="remove-file" class="text-red-700 cursor-pointer text-sm"></p>
                     </div>
 
                     <div style="display: none" class="flex progress items-center mb-6">
@@ -36,7 +39,7 @@
                         </div>
                     </div>
 
-                    <input accept=".csv" type="file" class="hidden"  id="browse-file"/>
+                    <input accept=".csv" type="file" class="hidden" id="browse-file" required />
                 </label>
             </div>
 
@@ -55,6 +58,6 @@
 </div>
 
 @section('js')
-<script src="upload.js"></script>
-<script src="toggle.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/toggle.js"></script>
 @endsection

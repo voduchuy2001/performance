@@ -17,3 +17,4 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [UploadController::class, 'index'])->name('index');
 Route::post('/', [UploadController::class, 'upload'])->name('upload');
 Route::post('/import', [UploadController::class, 'import'])->name('import');
+Route::post('/remove-file', [UploadController::class, 'remove'])->name('remove');

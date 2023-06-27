@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('sku')->nullable();
             $table->text('description')->nullable();
-            $table->string('price')->nullable();
+            $table->decimal('price')->nullable();
             $table->string('stock')->nullable();
-            $table->string('status')->nullable();
+            $table->enum('status', ['Drafted', 'Published'])->nullable();
             $table->string('type')->nullable();
             $table->string('vendor')->nullable();
             $table->string('created_at')->nullable();

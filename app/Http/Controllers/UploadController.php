@@ -6,7 +6,6 @@ use App\Jobs\UploadCsvJob;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
@@ -17,17 +16,7 @@ class UploadController extends Controller
     {
         $products = Product::orderByDesc('id')->paginate($this->perPage);
 
-        $filepPublicPaths = glob(public_path('uploads/*.csv'));
-
-        foreach ($filepPublicPaths as $path) {
-            unlink($path);
-        }
-
-        $filepStoragePaths = glob(storage_path('app/*.csv'));
-
-        foreach ($filepStoragePaths as $path) {
-            unlink($path);
-        }
+        $this->removeAllFile();
 
         return view('index', compact('products'));
     }
@@ -60,9 +49,11 @@ class UploadController extends Controller
                         fwrite($mergedFileHandle, $line);
                     }
                 }
+
                 fclose($csvFileHandle);
                 unlink($file);
             }
+
             fclose($mergedFileHandle);
         } else {
             $mergedFileName = $csvFiles[0];
@@ -149,5 +140,30 @@ class UploadController extends Controller
         }
 
         return redirect()->route('index')->with('messages', 'Process of adding data is complete.');
+    }
+
+    public function remove()
+    {
+        $this->removeAllFile();
+
+        return response()->json([
+            'message' => 'Deleted.',
+            200
+        ]);
+    }
+
+    public function removeAllFile()
+    {
+        $filepPublicPaths = glob(public_path('uploads/*.csv'));
+
+        foreach ($filepPublicPaths as $path) {
+            unlink($path);
+        }
+
+        $filepStoragePaths = glob(storage_path('app/*.csv'));
+
+        foreach ($filepStoragePaths as $path) {
+            unlink($path);
+        }
     }
 }
