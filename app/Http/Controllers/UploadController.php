@@ -139,6 +139,8 @@ class UploadController extends Controller
             UploadCsvJob::dispatch($filePath);
         }
 
+        $this->removeAllFile();
+        
         return redirect()->route('index')->with('messages', 'Process of adding data is complete.');
     }
 

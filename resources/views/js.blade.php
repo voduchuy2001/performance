@@ -1,8 +1,8 @@
 <script src="js/resumable.min.js"></script>
 <script src="js/jquery.min.js"></script>
+<script src="js/papaparse.min.js"></script>
 <script src="js/toastify-js.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 @if(session()->has('messages'))
     <script>
