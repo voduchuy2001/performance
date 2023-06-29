@@ -6,6 +6,7 @@ use App\Jobs\UploadCsvJob;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
@@ -23,50 +24,48 @@ class UploadController extends Controller
 
     public function upload(Request $request)
     {
-        $files =  $request->file();
+        $chunksPath = storage_path('app/uploads');
+        $chunkFolder = $request->input('resumableIdentifier');
+        $chunkNumber = $request->input('resumableChunkNumber');
+        $totalChunks = $request->input('resumableTotalChunks');
 
+        $filename = $request->file('file')->getClientOriginalName();
+        $extension = $request->file('file')->getClientOriginalExtension();
         $timestamp = now()->timestamp;
 
-        $mergedFileName = $timestamp . '.csv';
-
-        foreach ($files as $file) {
-            $extension = $file->getClientOriginalExtension();
-            $fileName = str_replace('.' . $extension, '', $file->getClientOriginalName());
-            $fileName = $timestamp . '_' . md5(time()) . '.' . $extension;
-
-            $file->move(public_path('uploads'), $fileName);
+        if (!File::exists($chunksPath . '/' . $chunkFolder)) {
+            File::makeDirectory($chunksPath . '/' . $chunkFolder);
         }
 
-        $csvFiles = glob(public_path('uploads/*.csv'));
-        if (count($csvFiles) > 1) {
-            $mergedFilePath = public_path('uploads/' . $mergedFileName);
-            $mergedFileHandle = fopen($mergedFilePath, 'w');
-            foreach ($csvFiles as $file) {
-                $csvFileHandle = fopen($file, 'r');
-                while (!feof($csvFileHandle)) {
-                    $line = fgets($csvFileHandle);
-                    if ($line !== false) {
-                        fwrite($mergedFileHandle, $line);
-                    }
-                }
+        $request->file('file')->move($chunksPath . '/' . $chunkFolder, $chunkNumber . '.' . $extension);
 
-                fclose($csvFileHandle);
-                unlink($file);
+        if ($chunkNumber == $totalChunks) {
+            $mergedFilePath = storage_path('app/uploads/' . $timestamp . '_' . $filename);
+            $destination = fopen($mergedFilePath, 'a');
+
+            for ($i = 1; $i <= $totalChunks; $i++) {
+                $chunkFilePath = $chunksPath . '/' . $chunkFolder . '/' . $i . '.' . $extension;
+                fwrite($destination, file_get_contents($chunkFilePath));
+
+                unlink($chunkFilePath);
             }
 
-            fclose($mergedFileHandle);
-        } else {
-            $mergedFileName = $csvFiles[0];
+            fclose($destination);
+            rmdir($chunksPath . '/' . $chunkFolder);
+
+            return response()->json([
+                'message' => 'File upload successfully',
+            ]);
         }
 
         return response()->json([
-            'message' => 'Upload file successfully',
+            'message' => 'Chunk uploaded successfully',
         ]);
     }
 
     public function import()
     {
-        $path = glob(public_path('uploads/*.csv'));
+        $path = glob(storage_path('app/uploads/*.csv'));
 
         $delimiter = ',';
         $header = [
@@ -80,6 +79,7 @@ class UploadController extends Controller
             'Vendor',
             'Created At'
         ];
+
         $chunkSize = 100000;
 
         $handle = fopen($path[0], 'r');
@@ -140,7 +140,7 @@ class UploadController extends Controller
         }
 
         $this->removeAllFile();
-        
+
         return redirect()->route('index')->with('messages', 'Process of adding data is complete.');
     }
 
@@ -156,7 +156,7 @@ class UploadController extends Controller
 
     public function removeAllFile()
     {
-        $filepPublicPaths = glob(public_path('uploads/*.csv'));
+        $filepPublicPaths = glob(storage_path('app/uploads/*.csv'));
 
         foreach ($filepPublicPaths as $path) {
             unlink($path);

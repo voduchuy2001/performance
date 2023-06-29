@@ -50,15 +50,15 @@ class UploadCsvJob implements ShouldQueue
 
             foreach ($chunk as $record) {
                 $data[] = [
-                    'name' => $record['Name'] ? $record['Name'] : null,
-                    'sku' => $record['SKU'] ? $record['SKU'] : null,
-                    'description' => $record['Description'] ? $record['Description'] : null,
-                    'price' => $record['Price'] ? $record['Price'] : null,
-                    'stock' => $record['Stock'] ? $record['Stock'] : null,
-                    'status' =>  $record['Status'] ? $record['Status'] : null,
-                    'type' => $record['Type'] ? $record['Type'] : null,
-                    'vendor' => $record['Vendor'] ? $record['Vendor'] : null,
-                    'created_at' => $record['Created At'] ? $record['Created At'] : null,
+                    'name' => $record['Name'],
+                    'sku' => $record['SKU'],
+                    'description' => $record['Description'],
+                    'price' => $record['Price'],
+                    'stock' => $record['Stock'],
+                    'status' =>  $record['Status'],
+                    'type' => $record['Type'],
+                    'vendor' => $record['Vendor'],
+                    'created_at' => $record['Created At'],
                 ];
             }
 

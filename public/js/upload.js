@@ -13,8 +13,8 @@ let resumable = new Resumable({
     query: { _token: csrfToken },
     fileType: ['csv'],
     maxFiles: 1,
-    chunkSize: 20 * 1024 * 1024,
-    forceChunkSize: true,
+    chunkSize: 2 * 1024 * 1024,
+    forceChunkSize: false,
     simultaneousUploads: 1,
     headers: {
         'Accept': 'application/json'
